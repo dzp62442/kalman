@@ -15,6 +15,7 @@ Currently implementations of these filter variants are included:
 This library makes heavy use of the excellent [Eigen3 library](http://eigen.tuxfamily.org) for linear algebra operations and is thus a required dependency.
 
 ## Usage
+
 In order to use the library to do state estimation, a number of things have to be done:
 
 1. Define a state-vector type
@@ -23,16 +24,20 @@ In order to use the library to do state estimation, a number of things have to b
 4. Define one (or more) measurement models with corresponding measurement vector types
 
 ### Example
+
 A fairly worked out example on how to use the library is given in `examples/Robot1` with detailed commentary.
 
 ### State Vector
+
 The state vector defines the state variables of your system that should be estimated.
 You can use the readily available `Kalman::Vector` template type as your vector or derive your own specialized state vector from that.
 
 ### Control Vector
+
 In case your system has some control input, a control vector has to be defined analogously to the state vector.
 
 ### System Model
+
 The system model defines how the system state evolves over time, i.e. from one time-step to the next given some control input.
 The transition function is in general non-linear. Any system model must derive from the base `SystemModel` class template.
 In case a linearized filter such as the Extended Kalman Filter should be used, then the system model must be given as linearized model by deriving from `LinearizedSystemModel` and defining the corresponding jacobians.
@@ -40,9 +45,11 @@ In case a linearized filter such as the Extended Kalman Filter should be used, t
 Note that linearized models can of course also be used with fully non-linear filters such as the Unscented Kalman Filter.
 
 ### Measurement Vector
+
 The measurement vector represents the measurement taken by some sensors and has to be defined analogously to the state and control vectors.
 
 ### Measurement Model
+
 The measurement model defines how a measurement is related to the system state, i.e. it maps a system state to the expected sensor measurement.
 Measurement models must derive from the class template `MeasurementModel` or, in case of linearized models for EKFs, from `LinearizedMeasurementModel`.
 
@@ -59,7 +66,6 @@ which is also automatically set when using the general
     -DNDEBUG
 
 flag. In addition to that the regular optimization flags including `-O2` will make things faster.
-
 
 ## License
 

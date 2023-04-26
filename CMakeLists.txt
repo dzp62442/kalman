@@ -58,6 +58,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DEIGEN_NO_DEBUG")
 # Examples
 if(KALMAN_BUILD_EXAMPLES)
   add_executable(example_robot1 "examples/Robot1/main.cpp")
+  add_executable(my_robot "examples/MyRobot/main.cpp")
 endif()
 
 # Unit Tests
@@ -75,6 +76,9 @@ set(TESTS
     test/SquareRootBase.cpp
     test/Matrix.cpp
 )
+
+# 使用googletest进行测试
+set(BUILD_TESTING OFF)
 
 if(BUILD_TESTING)
   enable_testing()
