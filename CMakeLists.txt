@@ -57,37 +57,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DEIGEN_NO_DEBUG")
 
 # Examples
 if(KALMAN_BUILD_EXAMPLES)
-  add_executable(example_robot1 "examples/Robot1/main.cpp")
   add_executable(my_robot "examples/MyRobot/main.cpp")
 endif()
 
-# Unit Tests
-set(TESTS
-    # EKF
-    test/ExtendedKalmanFilter.cpp
-    
-    # UKF
-    test/UnscentedKalmanFilterBase.cpp
-    test/UnscentedKalmanFilter.cpp
-    test/SquareRootUnscentedKalmanFilter.cpp
-    
-    # Utils
-    test/StandardBase.cpp
-    test/SquareRootBase.cpp
-    test/Matrix.cpp
-)
-
-# 使用googletest进行测试
-set(BUILD_TESTING OFF)
-
-if(BUILD_TESTING)
-  enable_testing()
-  add_subdirectory("external/googletest")
-  include_directories("external/googletest/include")
-  add_executable(kalman_test ${TESTS} ${HEADERS})
-  target_link_libraries(kalman_test PRIVATE gtest gtest_main)
-  add_test(Kalman kalman_test)
-endif()
 
 #
 # Install/Uninstall support
