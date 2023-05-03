@@ -7,7 +7,6 @@ namespace KalmanExamples
 {
 namespace MyRobot
 {
-
 /**
  * @brief 观测向量，到地标（原点）的距离和朝向角度
  * @param T Numeric scalar type
@@ -18,11 +17,8 @@ class Measurement : public Kalman::Vector<T, 2>
 public:
     KALMAN_VECTOR(Measurement, T, 2)
     
-    //! 到地标的距离
-    static constexpr size_t D = 0;
-    
-    //! 与地标的朝向夹角
-    static constexpr size_t ALPHA = 1;
+    static constexpr size_t D = 0;  //! 到地标的距离
+    static constexpr size_t ALPHA = 1;  //! 与地标的朝向夹角
     
     T d()       const { return (*this)[ D ]; }
     T alpha()       const { return (*this)[ ALPHA ]; }
@@ -32,14 +28,7 @@ public:
 };
 
 /**
- * @brief Measurement model for measuring the position of the robot
- *        using two beacon-landmarks
- *
- * This is the measurement model for measuring the position of the robot.
- * The measurement is given by two landmarks in the space, whose positions are known.
- * The robot can measure the direct distance to both the landmarks, for instance
- * through visual localization techniques.
- *
+ * @brief 观测模型
  * @param T Numeric scalar type
  * @param CovarianceBase Class template to determine the covariance representation
  *                       (as covariance matrix (StandardBase) or as lower-triangular
@@ -49,19 +38,14 @@ template<typename T, template<class> class CovarianceBase = Kalman::StandardBase
 class MeasurementModel : public Kalman::LinearizedMeasurementModel<State<T>, Measurement<T>, CovarianceBase>
 {
 public:
-    //! State type shortcut definition
     typedef  KalmanExamples::MyRobot::State<T> S;
-    
-    //! Measurement type shortcut definition
     typedef  KalmanExamples::MyRobot::Measurement<T> M;
     
     /**
-     * @brief Constructor
+     * @brief 构造函数
      */
     MeasurementModel()
     {
-        // Setup noise jacobian. As this one is static, we can define it once
-        // and do not need to update it dynamically
         this->H.setIdentity();
         this->V.setIdentity();
     }
@@ -74,9 +58,8 @@ public:
     M h(const S& x) const
     {
         M measurement;
-        
-        // Robot position as (x,y)-vector
-        // This uses the Eigen template method to get the first 2 elements of the vector
+
+        // 机器人位置
         Kalman::Vector<T, 2> position = x.template head<2>();
         
         // 机器人到地标的距离
@@ -97,14 +80,10 @@ protected:
      */
     void updateJacobians( const S& x )
     {
-        // H = dh/dx (Jacobian of measurement function w.r.t. the state)
+        // 关于状态的雅各比矩阵 H = dh/dx
         this->H.setZero();
         
-        // Robot position as (x,y)-vector
-        // This uses the Eigen template method to get the first 2 elements of the vector
         Kalman::Vector<T, 2> position = x.template head<2>();
-        
-        // Distances
         T d2 = position.dot(position);
         T d = std::sqrt(d2);
         

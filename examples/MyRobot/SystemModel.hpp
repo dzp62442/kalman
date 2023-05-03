@@ -18,11 +18,8 @@ class State : public Kalman::Vector<T, 3>
 public:
     KALMAN_VECTOR(State, T, 3)
     
-    //! X-position
     static constexpr size_t X = 0;
-    //! Y-Position
     static constexpr size_t Y = 1;
-    //! Orientation
     static constexpr size_t THETA = 2;
     
     T x()       const { return (*this)[ X ]; }
@@ -44,9 +41,7 @@ class Control : public Kalman::Vector<T, 2>
 public:
     KALMAN_VECTOR(Control, T, 2)
     
-    //! Velocity
     static constexpr size_t V = 0;
-    //! Angular Rate (Orientation-change)
     static constexpr size_t DTHETA = 1;
     
     T v()       const { return (*this)[ V ]; }
@@ -67,9 +62,8 @@ template<typename T, template<class> class CovarianceBase = Kalman::StandardBase
 class SystemModel : public Kalman::LinearizedSystemModel<State<T>, Control<T>, CovarianceBase>
 {
 public:
-	typedef KalmanExamples::MyRobot::State<T> S;  // State type shortcut definition
-    typedef KalmanExamples::MyRobot::Control<T> C;  // Control type shortcut definition
-    
+	typedef KalmanExamples::MyRobot::State<T> S;
+    typedef KalmanExamples::MyRobot::Control<T> C;
     /**
      * @brief 非线性状态转移函数
      * @param [in] x 当前时刻系统状态
@@ -78,22 +72,14 @@ public:
      */
     S f(const S& x, const C& u) const
     {
-        //! Predicted state vector after transition
-        S x_;
+        S x_;  //! 下一时刻的状态向量预测值
         
-        // New orientation given by old orientation plus orientation change
-        auto newOrientation = x.theta() + u.dtheta();
-        // Re-scale orientation to [-pi/2 to +pi/2]
-        
+        auto newOrientation = x.theta() + u.dtheta();        
         x_.theta() = newOrientation;
         
-        // New x-position given by old x-position plus change in x-direction
-        // Change in x-direction is given by the cosine of the (new) orientation
-        // times the velocity
         x_.x() = x.x() + std::cos( newOrientation ) * u.v();
         x_.y() = x.y() + std::sin( newOrientation ) * u.v();
         
-        // Return transitioned state vector
         return x_;
     }
     
@@ -104,7 +90,7 @@ protected:
      */
     void updateJacobians( const S& x, const C& u )
     {
-        // F = df/dx (Jacobian of state transition w.r.t. the state)
+        // 关于状态的雅各比矩阵 F = df/dx
         this->F.setZero();
         
         this->F( S::X, S::X ) = 1;
@@ -115,11 +101,8 @@ protected:
         
         this->F( S::THETA, S::THETA ) = 1;
         
-        // W = df/dw (Jacobian of state transition w.r.t. the noise)
+        // 关于噪声的雅各比矩阵 W = df/dw
         this->W.setIdentity();
-        // TODO: more sophisticated noise modelling
-        //       i.e. The noise affects the the direction in which we move as 
-        //       well as the velocity (i.e. the distance we move)
     }
 };
 

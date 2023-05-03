@@ -1,6 +1,3 @@
-
-// this MUST be first, otherwise there might be problems on windows
-// see: https://stackoverflow.com/questions/6563810/m-pi-works-with-math-h-but-not-with-cmath-in-visual-studio/6563891#6563891
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -13,7 +10,6 @@
 #include <iostream>
 #include <random>
 #include <chrono>
-
 
 using namespace KalmanExamples;
 
