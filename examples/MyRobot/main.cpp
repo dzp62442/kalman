@@ -4,10 +4,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-
 #include "SystemModel.hpp"
-#include "OrientationMeasurementModel.hpp"
-#include "PositionMeasurementModel.hpp"
+#include "MeasurementModel.hpp"
 
 #include <kalman/ExtendedKalmanFilter.hpp>
 #include <kalman/UnscentedKalmanFilter.hpp>
@@ -26,26 +24,22 @@ typedef MyRobot::State<T> State;
 typedef MyRobot::Control<T> Control;
 typedef MyRobot::SystemModel<T> SystemModel;
 
-typedef MyRobot::PositionMeasurement<T> PositionMeasurement;
-typedef MyRobot::OrientationMeasurement<T> OrientationMeasurement;
-typedef MyRobot::PositionMeasurementModel<T> PositionModel;
-typedef MyRobot::OrientationMeasurementModel<T> OrientationModel;
+typedef MyRobot::Measurement<T> Measurement;
+typedef MyRobot::MeasurementModel<T> MeasurementModel;
 
 int main(int argc, char** argv)
 {
-    // Simulated (true) system state
+    // 状态向量真实值（无噪声）
     State x;
     x.setZero();
     
     // Control input
     Control u;
-    // System
+    // System model
     SystemModel sys;
     
-    // Measurement models
-    // Set position landmarks at (-10, -10) and (30, 75)
-    PositionModel pm(-10, -10, 30, 75);
-    OrientationModel om;
+    // Measurement model
+    MeasurementModel mm;
     
     // Random number generation (for noise simulation)
     std::default_random_engine generator;
@@ -66,17 +60,17 @@ int main(int argc, char** argv)
     ukf.init(x);
     
     // Standard-Deviation of noise added to all state vector components during state transition
-    T systemNoise = 0.1;
+    T systemNoise = 0.01;
     // Standard-Deviation of noise added to all measurement vector components in orientation measurements
     T orientationNoise = 0.025;
     // Standard-Deviation of noise added to all measurement vector components in distance measurements
-    T distanceNoise = 0.25;
+    T distanceNoise = 0.025;
     
     // Simulate for 100 steps
     const size_t N = 100;
     for(size_t i = 1; i <= N; i++)
     {
-        // Generate some control input
+        // 控制向量输入
         u.v() = 1. + std::sin( T(2) * T(M_PI) / T(N) );
         u.dtheta() = std::sin( T(2) * T(M_PI) / T(N) ) * (1 - 2*(i > 50));
         
@@ -92,36 +86,20 @@ int main(int argc, char** argv)
         auto x_pred = predictor.predict(sys, u);
         auto x_ekf = ekf.predict(sys, u);
         auto x_ukf = ukf.predict(sys, u);
-        
-        // Orientation measurement
-        {
-            // We can measure the orientation every 5th step
-            OrientationMeasurement orientation = om.h(x);
-            
-            // Measurement is affected by noise as well
-            orientation.theta() += orientationNoise * noise(generator);
-            
-            // Update EKF
-            x_ekf = ekf.update(om, orientation);
-            
-            // Update UKF
-            x_ukf = ukf.update(om, orientation);
-        }
-        
-        // Position measurement
+
         {
             // We can measure the position every 10th step
-            PositionMeasurement position = pm.h(x);
+            Measurement measure = mm.h(x);
             
             // Measurement is affected by noise as well
-            position.d1() += distanceNoise * noise(generator);
-            position.d2() += distanceNoise * noise(generator);
+            measure.d() += distanceNoise * noise(generator);
+            measure.alpha() += orientationNoise * noise(generator);
             
             // Update EKF
-            x_ekf = ekf.update(pm, position);
+            x_ekf = ekf.update(mm, measure);
             
             // Update UKF
-            x_ukf = ukf.update(pm, position);
+            x_ukf = ukf.update(mm, measure);
         }
         
         // Print to stdout as csv format

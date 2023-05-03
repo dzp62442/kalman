@@ -107,17 +107,12 @@ protected:
         // F = df/dx (Jacobian of state transition w.r.t. the state)
         this->F.setZero();
         
-        // partial derivative of x.x() w.r.t. x.x()
         this->F( S::X, S::X ) = 1;
-        // partial derivative of x.x() w.r.t. x.theta()
         this->F( S::X, S::THETA ) = -std::sin( x.theta() + u.dtheta() ) * u.v();
         
-        // partial derivative of x.y() w.r.t. x.y()
         this->F( S::Y, S::Y ) = 1;
-        // partial derivative of x.y() w.r.t. x.theta()
         this->F( S::Y, S::THETA ) = std::cos( x.theta() + u.dtheta() ) * u.v();
         
-        // partial derivative of x.theta() w.r.t. x.theta()
         this->F( S::THETA, S::THETA ) = 1;
         
         // W = df/dw (Jacobian of state transition w.r.t. the noise)
